@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plant Disease Detector</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────── -->
+<header class="app-header">
+  <span class="leaf">🌿</span>
+  <h1>Plant Disease Detector</h1>
+  <span class="sub">
+    GrabCut Segmentation · HSV Analysis<br>
+    Mamdani Fuzzy Logic · 14 Plant Species
+  </span>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────────────────── -->
+<main class="container">
+
+  <!-- LEFT: Upload -->
+  <section class="upload-card">
+    <div class="drop-zone" id="dropZone">
+      <div class="dz-icon">🍃</div>
+      <p>
+        <strong>Drag &amp; drop a leaf image here</strong><br>
+        or <span class="browse-link" id="browseLink">click to browse</span>
+      </p>
+      <p style="margin-top:8px;font-size:.76rem">JPG · PNG · WEBP &nbsp;·&nbsp; max 15 MB</p>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" />
+
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" src="" alt="Preview" />
+      <button class="remove-btn" id="removeBtn" title="Remove image">✕</button>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" disabled>
+      <span class="spinner" id="spinner"></span>
+      <span id="btnText">🔍 Analyze Plant</span>
+    </button>
+
+    <p style="margin-top:12px;font-size:.76rem;color:var(--muted);text-align:center;line-height:1.6">
+      Returns severity grade · ROI &amp; POI metrics ·<br>segmentation overlay · treatment advice
+    </p>
+  </section>
+
+  <!-- RIGHT: Results -->
+  <section class="result-panel" id="resultPanel">
+    <div class="placeholder-card" id="placeholder">
+      📷 Upload a plant leaf image to get started
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Toast ──────────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
