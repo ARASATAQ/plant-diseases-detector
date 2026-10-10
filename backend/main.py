@@ -44,9 +44,16 @@ async def index():
 
 @app.get('/health', tags=['Health'])
 async def health():
-    import torch
+    try:
+        import torch
+        cuda_avail = torch.cuda.is_available()
+        device_name = str(torch.cuda.get_device_name(0)) if cuda_avail else 'CPU'
+    except ImportError:
+        cuda_avail = False
+        device_name = 'Lightweight Mode (PyTorch Disabled)'
+        
     return {
         'status': 'ok',
-        'cuda_available': torch.cuda.is_available(),
-        'device': str(torch.cuda.get_device_name(0)) if torch.cuda.is_available() else 'CPU',
+        'cuda_available': cuda_avail,
+        'device': device_name,
     }

@@ -7,13 +7,17 @@ RTX 4060 / CUDA auto-detected.
 import os
 import cv2
 import numpy as np
-import torch
-import torch.nn as nn
-import torchvision.models as models
-import torchvision.transforms as transforms
-from PIL import Image
-
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+try:
+    import torch
+    import torch.nn as nn
+    import torchvision.models as models
+    import torchvision.transforms as transforms
+    from PIL import Image
+    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
+    DEVICE = None
 
 PLANT_CLASSES = [
     'Apple — Apple scab',           'Apple — Black rot',
@@ -70,6 +74,11 @@ RECOMMENDATIONS = {
 class PlantDiseaseClassifier:
     def __init__(self, weights_path: str = None):
         self.fine_tuned = False
+        
+        if not TORCH_AVAILABLE:
+            print('[Classifier] PyTorch not installed. Running in lightweight (Render Free Tier) mode with colour heuristics only.')
+            return
+
         # Support both old torchvision (pretrained=True) and new (weights=...)
         try:
             self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
