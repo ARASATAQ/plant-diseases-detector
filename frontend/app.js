@@ -16,6 +16,27 @@ const toast       = document.getElementById('toast');
 
 let selectedFile = null;
 
+/* ── Intersection Observer for Scroll Animations ──────────────────── */
+const observerOptions = {
+  root: null,
+  rootMargin: '0px',
+  threshold: 0.1
+};
+
+const observer = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+    }
+  });
+}, observerOptions);
+
+function observeElements() {
+  document.querySelectorAll('.animate-on-scroll').forEach((el) => {
+    observer.observe(el);
+  });
+}
+
 /* ── File selection ────────────────────────────────────────────────── */
 browseLink.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('click', (e) => {
@@ -127,7 +148,7 @@ function renderResults(d) {
 
   resultPanel.innerHTML = `
     <!-- ── Grade Card ── -->
-    <div class="grade-card">
+    <div class="grade-card animate-on-scroll">
       <div class="grade-badge ${grade}">
         <span class="score">${Math.round(d.severity_score)}</span>
         <span>${grade.toUpperCase()}</span>
@@ -140,7 +161,7 @@ function renderResults(d) {
     </div>
 
     <!-- ── Metrics Card ── -->
-    <div class="metrics-card">
+    <div class="metrics-card animate-on-scroll">
       <div class="card-title">📊 Segmentation Metrics</div>
 
       <div class="metric-row">
@@ -169,7 +190,7 @@ function renderResults(d) {
           <span>${d.leaf_pixels.toLocaleString()} px</span>
         </div>
         <div class="metric-bar">
-          <div class="metric-fill fill-green" style="width:100%"></div>
+          <div class="metric-fill fill-purple" style="width:100%"></div>
         </div>
       </div>
 
@@ -179,13 +200,13 @@ function renderResults(d) {
           <span>${d.severity_score.toFixed(2)}</span>
         </div>
         <div class="metric-bar">
-          <div class="metric-fill fill-green" style="width:${scoreBarW}%"></div>
+          <div class="metric-fill fill-purple" style="width:${scoreBarW}%"></div>
         </div>
       </div>
     </div>
 
     <!-- ── Overlay Images ── -->
-    <div class="images-card">
+    <div class="images-card animate-on-scroll">
       <div class="card-title">🔬 Segmentation Overlay</div>
       <div class="images-grid">
         <figure>
@@ -200,14 +221,70 @@ function renderResults(d) {
     </div>
 
     <!-- ── Recommendation ── -->
-    <div class="rec-card">
+    <div class="rec-card animate-on-scroll">
       <span class="rec-icon">💊</span>
       <div class="rec-body">
         <strong>Treatment Recommendation</strong>
         <p>${d.recommendation}</p>
       </div>
     </div>
+    
+    <!-- ── Mamdani Inference Table ── -->
+    <div class="table-card animate-on-scroll">
+      <div class="card-title">⚙️ Mamdani Fuzzy Logic Rules</div>
+      <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 10px;">
+        Severity logic based on Percentage of Infection (POI) and Region of Interest (ROI).
+      </p>
+      <table class="mamdani-table">
+        <thead>
+          <tr>
+            <th>POI \\ ROI<br><span style="font-size:0.75rem;font-weight:normal;color:#c084fc">(0-100% \\ 0.0-1.0)</span></th>
+            <th>Small<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(0.0 - 0.25)</span></th>
+            <th>Medium<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(0.15 - 0.55)</span></th>
+            <th>Large<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(0.45 - 1.0)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="row-header">Low<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(0 - 25%)</span></td>
+            <td><span class="badge Healthy">Healthy</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(70 - 100)</span></td>
+            <td><span class="badge Mild">Mild</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(48 - 75)</span></td>
+            <td><span class="badge Mild">Mild</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(48 - 75)</span></td>
+          </tr>
+          <tr>
+            <td class="row-header">Medium<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(15 - 65%)</span></td>
+            <td><span class="badge Mild">Mild</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(48 - 75)</span></td>
+            <td><span class="badge Medium">Medium</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(25 - 53)</span></td>
+            <td><span class="badge Medium">Medium</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(25 - 53)</span></td>
+          </tr>
+          <tr>
+            <td class="row-header">High<br><span style="font-size:0.75rem;font-weight:normal;color:var(--muted)">(55 - 100%)</span></td>
+            <td><span class="badge Medium">Medium</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(25 - 53)</span></td>
+            <td><span class="badge Severe">Severe</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(0 - 32)</span></td>
+            <td><span class="badge Severe">Severe</span><br><span style="font-size:0.7rem;color:var(--muted);display:block;margin-top:4px">(0 - 32)</span></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border);">
+        <div style="font-size: 0.8rem; color: #c084fc; font-weight: 700; margin-bottom: 8px;">Fuzzy Rule Base (9 Rules)</div>
+        <ul style="list-style: none; font-size: 0.8rem; color: var(--muted); line-height: 1.6; margin-left: 0; padding-left: 0; font-family: monospace;">
+          <li>IF POI is Low AND ROI is Small THEN Severity is <span style="color:var(--green)">Healthy</span></li>
+          <li>IF POI is Low AND ROI is Medium THEN Severity is <span style="color:var(--yellow)">Mild</span></li>
+          <li>IF POI is Low AND ROI is Large THEN Severity is <span style="color:var(--yellow)">Mild</span></li>
+          <li>IF POI is Medium AND ROI is Small THEN Severity is <span style="color:var(--yellow)">Mild</span></li>
+          <li>IF POI is Medium AND ROI is Medium THEN Severity is <span style="color:var(--orange)">Medium</span></li>
+          <li>IF POI is Medium AND ROI is Large THEN Severity is <span style="color:var(--orange)">Medium</span></li>
+          <li>IF POI is High AND ROI is Small THEN Severity is <span style="color:var(--orange)">Medium</span></li>
+          <li>IF POI is High AND ROI is Medium THEN Severity is <span style="color:var(--red)">Severe</span></li>
+          <li>IF POI is High AND ROI is Large THEN Severity is <span style="color:var(--red)">Severe</span></li>
+        </ul>
+      </div>
+    </div>
   `;
+  
+  // Re-observe newly added elements
+  observeElements();
 }
 
 /* ── Helpers ───────────────────────────────────────────────────────── */
@@ -231,3 +308,6 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove('show'), 4500);
 }
+
+// Initial observer setup
+observeElements();

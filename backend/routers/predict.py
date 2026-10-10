@@ -48,10 +48,22 @@ async def predict(file: UploadFile = File(...)):
 
     # ── Phase 3: Disease classification ──────────────────────────────────────
     disease_class, confidence = disease_classifier.predict(image)
-    recommendation = disease_classifier.get_recommendation(disease_class)
+    base_recommendation = disease_classifier.get_recommendation(disease_class)
 
     # ── Phase 4: Fuzzy severity inference ────────────────────────────────────
     severity_score, severity_grade = fuzzy_classifier.classify(poi, roi_normalized)
+
+    # ── Enhance recommendation based on severity (1-2 sentences) ─────────────
+    if severity_grade == 'Healthy':
+        recommendation = f"{base_recommendation} The plant is in good condition! Continue your current maintenance routine to keep it healthy."
+    elif severity_grade == 'Mild':
+        recommendation = f"{base_recommendation} The infection is mild. Early treatment now is highly effective and will stop the spread."
+    elif severity_grade == 'Medium':
+        recommendation = f"{base_recommendation} The plant is in bad condition. Immediate targeted treatment is required. Consider isolating it from healthy plants."
+    elif severity_grade == 'Severe':
+        recommendation = f"{base_recommendation} The plant is in a critical/deadly state. You may need to heavily prune or entirely remove the plant to protect surrounding crops."
+    else:
+        recommendation = base_recommendation
 
     # ── Phase 5: Visual overlay ───────────────────────────────────────────────
     overlay_b64  = generate_overlay(image, leaf_mask, disease_mask)
