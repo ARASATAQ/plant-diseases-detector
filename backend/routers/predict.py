@@ -53,6 +53,12 @@ async def predict(file: UploadFile = File(...)):
     # ── Phase 4: Fuzzy severity inference ────────────────────────────────────
     severity_score, severity_grade = fuzzy_classifier.classify(poi, roi_normalized)
 
+    # If fuzzy engine or metrics confirm the plant is healthy, reflect it in the disease class
+    if severity_grade == 'Healthy' or poi < 5.0:
+        disease_class = 'Plant — Healthy'
+        confidence = round(max(confidence, severity_score / 100.0), 2)
+        base_recommendation = disease_classifier.get_recommendation('healthy')
+
     # ── Enhance recommendation based on severity (1-2 sentences) ─────────────
     if severity_grade == 'Healthy':
         recommendation = f"{base_recommendation} The plant is in good condition! Continue your current maintenance routine to keep it healthy."

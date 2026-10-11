@@ -129,10 +129,14 @@ class PlantDiseaseClassifier:
         """Rule-based estimation from lesion colour when model weights absent."""
         hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(hsv)
-        brown  = int(np.sum((h > 5)  & (h < 22) & (s > 80)))
-        yellow = int(np.sum((h > 22) & (h < 35) & (s > 80) & (v > 150)))
-        dark   = int(np.sum((v < 60) & (s < 55)))
-        total  = brown + yellow + dark + 1
+        green = int(np.sum((h > 25) & (h < 90) & (s > 30) & (v > 30)))
+        lesion_total = brown + yellow + dark
+
+        # If green tissue strongly dominates or lesions are negligible
+        if green > 1000 and (lesion_total < green * 0.04 or lesion_total < 500):
+            return 'Plant — Healthy', 0.95
+
+        total = lesion_total + 1
         if dark / total > 0.45:
             return 'Disease — Late blight / Black spot (estimated)', 0.60
         if yellow / total > 0.45:
