@@ -74,53 +74,41 @@ RECOMMENDATIONS = {
 class PlantDiseaseClassifier:
     def __init__(self, weights_path: str = None):
         self.fine_tuned = False
-        
+        self.model = None
+
         if not TORCH_AVAILABLE:
-            print('[Classifier] PyTorch not installed. Running in lightweight (Render Free Tier) mode with colour heuristics only.')
+            print('[Classifier] PyTorch not installed. Running with colour heuristics.')
             return
-
-        # Support both old torchvision (pretrained=True) and new (weights=...)
-        try:
-            self.model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-        except AttributeError:
-            import warnings
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                self.model = models.resnet50(pretrained=True)
-        self.model.fc = nn.Linear(self.model.fc.in_features, len(PLANT_CLASSES))
-
-
-        if weights_path and not os.path.exists(weights_path):
-            try:
-                print(f'[Classifier] Weights file not found at {weights_path}. Attempting automatic download...')
-                from download_weights import try_huggingface, try_direct
-                os.makedirs(os.path.dirname(weights_path), exist_ok=True)
-                try_huggingface() or try_direct()
-            except Exception as dl_err:
-                print(f'[Classifier] Auto-download failed: {dl_err}')
 
         if weights_path and os.path.exists(weights_path):
             try:
+                # Instantiate ResNet50 without downloading ImageNet weights
+                try:
+                    self.model = models.resnet50(weights=None)
+                except Exception:
+                    self.model = models.resnet50(pretrained=False)
+                self.model.fc = nn.Linear(self.model.fc.in_features, len(PLANT_CLASSES))
+
                 state_dict = torch.load(weights_path, map_location=DEVICE)
-                # Strip DataParallel 'module.' prefix if present
                 if any(k.startswith('module.') for k in state_dict.keys()):
                     state_dict = {k[7:]: v for k, v in state_dict.items()}
                 self.model.load_state_dict(state_dict)
+                self.model.to(DEVICE).eval()
                 self.fine_tuned = True
                 print(f'[Classifier] Loaded fine-tuned weights from {weights_path}')
+
+                self.transform = transforms.Compose([
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                ])
             except Exception as exc:
-                print(f'[Classifier] WARNING: Could not load weights ({exc}). Using ImageNet features.')
+                print(f'[Classifier] WARNING: Could not load weights ({exc}). Using colour analysis.')
+                self.model = None
+                self.fine_tuned = False
         else:
-            print('[Classifier] No fine-tuned weights found — using ImageNet ResNet50 + colour analysis.')
-
-        self.model.to(DEVICE).eval()
-
-        self.transform = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
+            print('[Classifier] No fine-tuned weights found — using colour analysis.')
 
     def predict(self, image_bgr: np.ndarray) -> tuple:
         """Returns (disease_class: str, confidence: float 0-1)."""
