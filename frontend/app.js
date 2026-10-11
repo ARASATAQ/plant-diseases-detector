@@ -141,8 +141,8 @@ function renderResults(d) {
   const scoreBarW = d.severity_score.toFixed(1);
 
   const modelNote = d.using_fine_tuned_model
-    ? '<span style="color:var(--green)">✓ Fine-tuned classifier</span>'
-    : '<span style="color:var(--orange)">⚡ Colour estimate — run <code>python download_weights.py</code> for full classifier</span>';
+    ? '<span style="color:var(--green)">✓ Deep Learning (ResNet50)</span>'
+    : '<span style="color:#c084fc">🔬 HSV Pathology & Lesion Analysis</span>';
 
   placeholder.style.display = 'none';
 

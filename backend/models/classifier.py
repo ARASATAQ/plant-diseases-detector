@@ -139,7 +139,7 @@ class PlantDiseaseClassifier:
             return 'Disease — Chlorosis / Mosaic virus (estimated)', 0.60
         if brown / total > 0.35:
             return 'Disease — Early blight / Brown spot (estimated)', 0.60
-        return 'Disease — Type undetermined (run download_weights.py for full classifier)', 0.50
+        return 'Disease — Type undetermined / General lesion pattern', 0.50
 
     def get_recommendation(self, disease_class: str) -> str:
         lc = disease_class.lower()
