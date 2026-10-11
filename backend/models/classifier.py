@@ -90,6 +90,15 @@ class PlantDiseaseClassifier:
         self.model.fc = nn.Linear(self.model.fc.in_features, len(PLANT_CLASSES))
 
 
+        if weights_path and not os.path.exists(weights_path):
+            try:
+                print(f'[Classifier] Weights file not found at {weights_path}. Attempting automatic download...')
+                from download_weights import try_huggingface, try_direct
+                os.makedirs(os.path.dirname(weights_path), exist_ok=True)
+                try_huggingface() or try_direct()
+            except Exception as dl_err:
+                print(f'[Classifier] Auto-download failed: {dl_err}')
+
         if weights_path and os.path.exists(weights_path):
             try:
                 state_dict = torch.load(weights_path, map_location=DEVICE)
